@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {# 需要提交数据的时候记得加上csrf_token #}
+    {# 然后会生成一个input，ajax提交数据的时候一定要记得加上它 #}
+    {% csrf_token %}
+    <div class="article-info">
+        <div class="title">
+        <h3 class="text-center">{{ article_obj.title }}</h3>
+        </div>
+        <div class="cont">
+            {# 用模板语法safe，解析html与js语句 #}
+            {{ article_obj.content|safe }}
+        </div>
+        {# 点赞与踩灭 #}
+        <div id="div_digg">
+            <div class="diggit action">
+                <span class="diggnum" id="digg_count">{{ article_obj.up_count }}</span>
+            </div>
+            <div class="buryit action">
+                <span class="burynum" id="bury_count">{{ article_obj.down_count }}</span>
+            </div>
+            <div class="clear"></div>
+            <div class="diggword" id="digg_tips" style="color:red; height: 10px;"></div>
+        </div>
+        {# 发表评论 #}
+        {# 这里加 style="clear: both"，因为上面的id="div_digg"的div设置了浮动，不加这个会跟那个div在一行 #}
+        {# 或者在 id="div_digg" 的上面再加一个父级的div，让它的class='clearfix'也有同样的效果 #}
+        <div class="comments list-group" style="clear:both">
+
+            <p style="color:orangered;">评论列表</p>
+            <div class="comment_list">
+                {# 用列表组实现 #}
+                <ul class="list-group comment_list">
+                    {% for comment in comment_list %}
+                        <li class="list-group-item">
+                            {# 评论内容装饰信息 #}
+                            <div>
+                                <a># {{ forloop.counter }}楼</a>&nbsp;&nbsp;
+                                <span>{{ comment.create_time|date:'Y-m-d H:i' }}</span>&nbsp;&nbsp;
+                                <a>{{ comment.user.username }}</a>
+                                {# 回复的a标签中自定义一个username属性，将当前评论人(也就是根评论人)的名字放在里面，后面就好取值了 #}
+                                {# 回复的a标签中再自定义一个comment_pk属性，当点击回复按钮的时候，表示此次是一个子评论，将根评论的id赋值给pid #}
+                                <a class="pull-right reply_btn" username="{{ comment.user.username }}" comment_pk="{{ comment.pk }}"  style="cursor:pointer" >回复</a>
+                            </div>
+                            {# 只有子评论才会有这个div  #}
+                            {% if comment.parent_comment_id %}
+                                <div class="pid_info well">
+                                    <p>回复:<br>
+                                        {# comment.parent_comment.user是一个父评论评论人对象 注意Comment类中的“自关联”#}
+                                        {{ comment.parent_comment.user.username }}:{{ comment.parent_comment.content }}
+                                    </p>
+                                </div>
+                            {% endif %}
+                            {# 评论内容 #}
+                            <div style="margin-top: 10px">
+                                {{ comment.content }}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <hr>
+            <p style="color:green;">发表评论</p>
+            <p>昵称：<input type="text" id="tbCommentAuthor" class="author" disabled="disabled" size="50" value="{{ request.user.username }}"></p>
+            <div class="commentbox_main">
+                <div class="commentbox_title">
+                    <div class="commentbox_title_left">评论内容：</div>
+                </div>
+                <div class="clear"></div>
+                <p><textarea id="comment_content" cols="30" rows="10" class="comment_textarea" style="margin-top:5px; width: 442px; height: 265px;"></textarea></p>
+                <p><button id="comment_btn" class="btn btn-success pull-left" >提交评论</button></p>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

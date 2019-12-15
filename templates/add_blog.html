@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登陆</title>
+    <link rel="stylesheet" href="/static/blog/bootstrap-3.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/blog/login.css">
+</head>
+<body style="margin: 0 auto">
+<div class="header-login">
+    博 客 系 统 添 加 个 人 博 客 页 面
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-lg-offset-3">
+            <form>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="user">个人博客标题</label>
+                    <input type="text" id="tag" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="pwd">站点名称</label>
+                    <input type="text" id="name" class="form-control">
+                </div>
+                {#验证码#}
+                <div class="form-group">
+                    <label for="pwd">博客主题(例如pizza.css)</label>
+                    <input type="text" id="css" class="form-control">
+                </div>
+                <input type="button" id="ok_btn" class="btn btn-success pull-left" value="添加"><span class="error"></span>
+            </form>
+        </div>
+</div>
+</div>
+<script src="/static/blog/jquery-1.12.4.js"></script>
+<script src="/static/blog/bootstrap-3.3.7/js/bootstrap.js"></script>
+<script>
+    //添加博客按钮
+    $('#ok_btn').click(function () {
+        if($('#tag').val() === '' || $('#name').val() === '' || $('#css').val() === ''){
+            alert('输入不能为空');
+        }
+        else{
+            $.ajax({
+            url:'',
+            type:'post',
+            data:{
+                username:'{{ request.user.username }}',
+                tag:$('#tag').val(),
+                name:$('#name').val(),
+                css:$('#css').val(),
+                csrfmiddlewaretoken:$('[name=csrfmiddlewaretoken]').val()
+            },
+            //不要把回调函数的data忘记写了，从后台接收到的
+            success:function (data) {
+                console.log(data);
+                if(data.tag){
+                    location.href = '/index/'
+                }
+                else{
+                    $('.error').text(data.msg).css({'color':'red','margin-left':'10px'});
+                    //2秒后清空消息
+                    setTimeout(function () {
+                            $('.error').text('')
+                        },2000)
+                    }
+                }
+            })
+        }
+    })
+
+</script>
+
+
+</body>
+</html>

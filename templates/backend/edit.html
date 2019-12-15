@@ -1,0 +1,62 @@
+{% extends 'backend/base.html' %}
+
+{% block content %}
+    <form action="" method="post">
+        {% csrf_token %}
+       <div class="add_article">
+         <div class="alert-success text-center">添加文章</div>
+         <div class="add_article_region">
+              <div class="title form-group">
+                  <div class="title form-group">
+                      <label for="">文章分类</label>
+                      <select name="category_name" id="" class="form-control">
+                        {% for category in category_list %}
+                            {#给用户看title，往后台传pk#}
+                            <option value="{{ category.pk }}">{{ category.title }}</option>
+                        {% endfor %}
+                    </select>
+                  </div>
+                  <div class="title form-group">
+                      <label for="">文章所属标签</label>
+                      <select name="tags_name" id="" class="form-control" multiple>
+                        {% for tag in tag_list %}
+                            {#给用户看title，往后台传pk#}
+                            <option value='{{ tag.nid }}'>{{ tag.title }}</option>
+                        {% endfor %}
+                    </select>
+                  </div>
+                 <div class="title form-group">
+                 <label for="">文章标题</label>
+                 <div>
+                     <input type="text" name="title" value="{{ title }}">
+                 </div>
+                 </div>
+             </div>
+             <div class="content form-group">
+                 <label for="">文章内容(Kindeditor编辑器，不支持拖放/粘贴上传图片) </label>
+                 <div>
+                     <textarea name="content" id="article_content" cols="30" rows="10">{{ content }}</textarea>
+                 </div>
+             </div>
+             <input type="submit" class="btn btn-default">
+         </div>
+    </div>
+    </form>
+   <script src="/static/blog/jquery-1.12.4.js"></script>
+   <script charset="utf-8" src="/static/blog/kindeditor/kindeditor-all.js"></script>
+    <script>
+            KindEditor.ready(function(K) {
+                    window.editor = K.create('#article_content',{
+                        width:"800",
+                        height:"600",
+                        resizeType:0,
+                        uploadJson:"/upload/",
+                        extraFileUploadParams:{
+                            csrfmiddlewaretoken:$("[name='csrfmiddlewaretoken']").val(),
+                            username:'{{ request.user.username }}'
+                        },
+                        filePostName:"upload_img"
+                    });
+            });
+    </script>
+{% endblock %}

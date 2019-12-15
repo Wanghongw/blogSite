@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+    <link rel="stylesheet" href="/static/blog/bootstrap-3.3.7/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/blog/login.css">
+</head>
+<body>
+<div class="header-register">
+    博 客 系 统 注 册 界 面
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-lg-offset-3">
+            <form id="form">
+                {% csrf_token %}
+                {# 渲染标签 #}
+                {% for foo in form %}
+                 <div class="form-group">
+                    {# 也可以这样写 #}
+                  <label for="id_{{ foo.name }}">{{ foo.label }}</label>
+{#                    <label for="{{ foo.auto_id }}">{{ foo.label }}</label>#}
+                    {{ foo }} <span style="color:red" class="error pull-right"></span>
+                </div>
+                {% endfor %}
+                {# 上传与头像预览 #}
+                <div class="form-group">
+                     {# 将label的for值与input的id值设成一致，这样点击for会直接到input里面去，再把input隐藏就好了 #}
+                    <label for="avatar">上传头像&nbsp;&nbsp;
+                         <img id="avatar_img" style="height: 70px;width: 70px;" src="/static/img/default.jpg" alt="头像">
+                    </label>
+                    {# 将label的for值与input的id值设成一致，这样点击for会直接到input里面去，再把input隐藏就好了 #}
+                    <input id="avatar" type="file" style="display: none">
+                </div>
+                <input type="button" id="register_btn" class="btn btn-success pull-left" value="确认注册"><span class="error"></span>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="/static/blog/jquery-1.12.4.js"></script>
+<script src="/static/blog/bootstrap-3.3.7/js/bootstrap.js"></script>
+<script>
+    //头像预览功能
+    $('#avatar').change(function () {
+        //获取用户选中的文件对象
+        var file_obj =  $(this)[0].files[0];
+        //console.log(file_obj);
+        //再获取文件对象的路径——固定的方法
+        var reader = new FileReader();
+        reader.readAsDataURL(file_obj);
+        //注意，上一步完成后，文件的路径放在了reader.result中！
+        //再修改img的src属性——attr方法，src=文件对象的路径
+        //注意用写在onload方法里：
+        reader.onload = function () {
+            $('#avatar_img').attr('src',reader.result)
+        };
+    });
+    //注册按钮的点击事件
+    $('#register_btn').click(function () {
+        //生成FormData对象
+        var formdata = new FormData();
+        formdata.append('user',$('#id_user').val());
+        formdata.append('pwd',$('#id_pwd').val());
+        formdata.append('re_pwd',$('#id_re_pwd').val());
+        formdata.append('email',$('#id_email').val());
+        //注意这个必须得加，否则网页会上报Forbidden错误
+        formdata.append('csrfmiddlewaretoken',$('[name=csrfmiddlewaretoken]').val());
+        //图片对象的获取
+        formdata.append('avatar',$('#avatar')[0].files[0]);
+        //ajax操作
+        $.ajax({
+            url:'',
+            type:'post',
+            //下面这三项是固定的
+            contentType:false,
+            processData:false,
+            data:formdata,
+            success:function (data) {
+                console.log(data);
+                //注册成功
+                if(data.user){
+                    location.href='/login/'
+                }
+                //注册失败
+                else{
+
+                    $.each(data.msg,function (foo, error_list) {
+                        console.log(foo,error_list);
+                        //如果是个全局的错误信息(全局钩子获取)，将错误提示放在确认密码的input后面
+                        if(foo === '__all__'){
+                            $('#id_re_pwd').next().html('两次密码不一致');
+                            $('#id_re_pwd').parent().addClass('has-error');
+                        }
+                        //在相应的input标签的下一个span标签里写上错误信息
+                        $('#id_'+foo).next().html(error_list[0]);
+                        $('#id_'+foo).parent().addClass('has-error');
+                        //1.5秒后将消息请空
+                        setTimeout(function () {
+                            $('input.form-control').next().html('');
+                            $('div').removeClass('has-error');
+                        },2500)
+                    })
+                }
+            }
+        })
+    })
+</script>
+
+
+</body>
+</html>

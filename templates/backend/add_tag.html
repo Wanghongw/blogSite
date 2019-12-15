@@ -1,0 +1,61 @@
+{% extends 'backend/base.html' %}
+
+{% block content %}
+    <form action="" method="post">
+        {% csrf_token %}
+       <div class="add_article">
+         <div class="alert-success text-center">添加标签</div>
+         <div class="add_article_region">
+              <div class="title form-group">
+                 <label for="">标 签 名 称 </label>
+                 <div>
+                     <input id="tag_name" type="text" style="height:35px;color:blue">
+                 </div>
+             </div>
+             <hr>
+             <div class="title form-group">
+                 <label for="">所 属 博 客 </label>
+                 <div>
+                     <span style="height:35px;font-size:22px;color:red">{{ request.user.blog.title }}</span>
+                 </div>
+             </div>
+             <hr>
+             <input id="add_tag" type="button" class="btn btn-success" value="添加标签">
+             <span class="tag_error"></span>
+         </div>
+    </div>
+    </form>
+   <script src="/static/blog/jquery-1.12.4.js"></script>
+   <script src="/static/blog/bootstrap-3.3.7/js/bootstrap.js"></script>
+    <script>
+        $('#add_tag').click(function () {
+            if($('#tag_name').val() === ''){
+                alert('输入不能为空')
+            }
+            else{
+                $.ajax({
+                    url:'',
+                    type:'post',
+                    data:{
+                        tag_name:$('#tag_name').val(),
+                        blog_name:'{{ request.user.blog.title }}',
+                        csrfmiddlewaretoken:$("[name='csrfmiddlewaretoken']").val()
+                    },
+                    success:function (data) {
+                        if(data.tag){
+                             location.href = '/cn_backend/'
+                        }
+                        else{
+                            $('.tag_error').text(data.msg).css({'color':'red','margin-left':'11px'});
+                            setTimeout(function () {
+                                $('.tag_error').text('')
+                            },1500)
+                        }
+                    }
+                })
+            }
+        })
+
+
+    </script>
+{% endblock %}
